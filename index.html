@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Affichage dynamique Looker Studio</title>
+  <title>Affichage dynamique – Looker + Images</title>
   <style>
     html, body {
       margin: 0;
@@ -11,32 +11,37 @@
       overflow: hidden;
     }
 
-    #iframeWrapper {
+    #viewer {
       width: 100vw;
       height: 100vh;
       overflow: hidden;
       position: relative;
     }
 
-    #webframe {
+    iframe, img {
+      position: absolute;
+      top: 0;
+      left: 0;
       width: 100%;
       height: 100%;
+      object-fit: cover;
       border: none;
+      display: none;
+      background-color: #000;
     }
 
     #fullscreen-btn {
       position: fixed;
       bottom: 20px;
       right: 20px;
-      z-index: 1000;
+      z-index: 999;
       padding: 10px 20px;
       font-size: 16px;
+      background-color: #007bff;
+      color: #fff;
       border: none;
       border-radius: 5px;
-      background-color: #007bff;
-      color: white;
       cursor: pointer;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
     }
 
     #fullscreen-btn:hover {
@@ -46,43 +51,79 @@
 </head>
 <body>
 
-  <div id="iframeWrapper">
-    <iframe id="webframe"
-            src="https://lookerstudio.google.com/embed/reporting/92fa7c9b-2c7e-4b4e-8311-e4794146e829/page/r5nEF"
-            allowfullscreen
-            sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox">
-    </iframe>
+  <div id="viewer">
+    <img id="imgframe" src="">
+    <!-- Iframe sera créé dynamiquement -->
   </div>
 
   <button id="fullscreen-btn">Plein écran</button>
 
   <script>
+    const viewer = document.getElementById("viewer");
+    const img = document.getElementById("imgframe");
+
     const urls = [
-      "https://lookerstudio.google.com/embed/reporting/92fa7c9b-2c7e-4b4e-8311-e4794146e829/page/r5nEF",
-      "https://lh3.googleusercontent.com/p/AF1QipNnIjqZmXfoI5ZIqkTgifzUIwe2i6b0B0jaSB3t=s1360-w1360-h1020-rw",
-      "https://lh3.googleusercontent.com/p/AF1QipOVkLrAhgSRToOED7sX8t64a72geYpeQN98VYgo=s1360-w1360-h1020-rw"
+      // Rapport Looker Studio 1
+      { type: "iframe", src: "https://lookerstudio.google.com/embed/reporting/92fa7c9b-2c7e-4b4e-8311-e4794146e829/page/r5nEF" },
+      
+      // Rapport Looker Studio 2
+      { type: "iframe", src: "https://lookerstudio.google.com/embed/reporting/977fb442-5a6e-4125-84e8-ae11ba0e3033/page/dKmKF" },
+      
+      // Image 1
+      { type: "img", src: "https://i.imgur.com/Fj9h1UD.png" },
+
+      // Image 2
+      { type: "img", src: "https://i.imgur.com/5n9uCHz.png" }
     ];
 
     let current = 0;
-    const iframe = document.getElementById("webframe");
+    let iframe = null;
 
     function rotateContent() {
+      const item = urls[current];
+
+      // Supprimer l'iframe s'il y en a une
+      if (iframe && iframe.parentNode) {
+        viewer.removeChild(iframe);
+        iframe = null;
+      }
+
+      img.style.display = "none";
+
+      if (item.type === "iframe") {
+        iframe = document.createElement("iframe");
+        iframe.src = item.src;
+        iframe.allowFullscreen = true;
+        iframe.sandbox = "allow-storage-access-by-user-activation allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox";
+        iframe.style.display = "block";
+        iframe.style.position = "absolute";
+        iframe.style.top = 0;
+        iframe.style.left = 0;
+        iframe.style.width = "100%";
+        iframe.style.height = "100%";
+        iframe.style.objectFit = "cover";
+        iframe.style.border = "none";
+        viewer.appendChild(iframe);
+      } else {
+        img.src = item.src;
+        img.style.display = "block";
+      }
+
       current = (current + 1) % urls.length;
-      iframe.src = urls[current];
     }
 
-    // Rotation automatique toutes les 30 secondes
+    // Rotation toutes les 30 secondes
     setInterval(rotateContent, 30000);
+    window.addEventListener("load", rotateContent);
 
-    // Plein écran natif
+    // Plein écran
     document.getElementById("fullscreen-btn").addEventListener("click", () => {
-      const wrapper = document.getElementById("iframeWrapper");
-      if (wrapper.requestFullscreen) {
-        wrapper.requestFullscreen();
-      } else if (wrapper.webkitRequestFullscreen) {
-        wrapper.webkitRequestFullscreen();
-      } else if (wrapper.msRequestFullscreen) {
-        wrapper.msRequestFullscreen();
+      if (viewer.requestFullscreen) {
+        viewer.requestFullscreen();
+      } else if (viewer.webkitRequestFullscreen) {
+        viewer.webkitRequestFullscreen();
+      } else if (viewer.msRequestFullscreen) {
+        viewer.msRequestFullscreen();
       }
     });
   </script>
