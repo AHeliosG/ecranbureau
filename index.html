@@ -53,7 +53,7 @@
 
   <div id="viewer">
     <img id="imgframe" src="">
-    <!-- Iframe sera créé dynamiquement -->
+    <!-- L'iframe sera créée dynamiquement -->
   </div>
 
   <button id="fullscreen-btn">Plein écran</button>
@@ -65,10 +65,10 @@
     const urls = [
       // Rapport Looker Studio 1
       { type: "iframe", src: "https://lookerstudio.google.com/embed/reporting/92fa7c9b-2c7e-4b4e-8311-e4794146e829/page/r5nEF" },
-      
+
       // Rapport Looker Studio 2
       { type: "iframe", src: "https://lookerstudio.google.com/embed/reporting/977fb442-5a6e-4125-84e8-ae11ba0e3033/page/dKmKF" },
-      
+
       // Image 1
       { type: "img", src: "https://i.imgur.com/Fj9h1UD.png" },
 
@@ -82,7 +82,7 @@
     function rotateContent() {
       const item = urls[current];
 
-      // Supprimer l'iframe s'il y en a une
+      // Supprimer iframe si présente
       if (iframe && iframe.parentNode) {
         viewer.removeChild(iframe);
         iframe = null;
@@ -110,10 +110,11 @@
       }
 
       current = (current + 1) % urls.length;
+
+      // 🔁 Attendre 60s avant de passer au suivant
+      setTimeout(rotateContent, 60000);
     }
 
-    // Rotation toutes les 60 secondes
-    setInterval(rotateContent, 60000);
     window.addEventListener("load", rotateContent);
 
     // Plein écran
