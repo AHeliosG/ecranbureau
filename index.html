@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Affichage dynamique – Résilient</title>
+  <style>
+    html, body {
+      margin: 0;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    #viewer {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    iframe, img {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border: none;
+      object-fit: cover;
+      background: #000;
+      display: none;
+    }
+
+    #fullscreen-btn {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 999;
+      padding: 10px 20px;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    #fullscreen-btn:hover {
+      background-color: #0056b3;
+    }
+  </style>
+</head>
+<body>
+
+<div id="viewer">
+  <img id="imgframe" src="">
+  <!-- Iframe sera injecté ici -->
+</div>
+
+<button id="fullscreen-btn">Plein écran</button>
+
+<script>
+  const viewer = document.getElementById("viewer");
+  const img = document.getElementById("imgframe");
+
+  const urls = [
+    { type: "iframe", src: "https://lookerstudio.google.com/embed/reporting/92fa7c9b-2c7e-4b4e-8311-e4794146e829/page/r5nEF" },
+    { type: "iframe", src: "https://lookerstudio.google.com/embed/reporting/977fb442-5a6e-4125-84e8-ae11ba0e3033/page/dKmKF" },
+    { type: "img", src: "https://i.imgur.com/Fj9h1UD.png" },
+    { type: "img", src: "https://i.imgur.com/5n9uCHz.png" }
+  ];
+
+  let current = 0;
+  let iframe = null;
+  let rotationTimer = null;
+  let failSafeTimeout = null;
+
+  function rotateContent() {
+    clearTimeout(rotationTimer);
+    clearTimeout(failSafeTimeout);
+
+    const item = urls[current];
+
+    // Nettoyage de l'iframe précédente
+    if (iframe && iframe.parentNode) {
+      viewer.removeChild(iframe);
+      iframe = null;
+    }
+
+    img.style.display = "none";
+
+    if (item.type === "iframe") {
+      iframe = document.createElement("iframe");
+      iframe.src = item.src;
+      iframe.allowFullscreen = true;
+      iframe.sandbox = "allow-storage-access-by-user-activation allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox";
+      iframe.style.position = "absolute";
+      iframe.style.width = "100%";
+      iframe.style.height = "100%";
+      iframe.style.objectFit = "cover";
+      iframe.style.border = "none";
+      iframe.style.display = "block";
+
+      // Si iframe se charge correctement
+      iframe.onload = () => clearTimeout(failSafeTimeout);
+
+      viewer.appendChild(iframe);
+
+      // Sécurité : si pas chargé en 20s → passer au suivant
+      failSafeTimeout = setTimeout(() => {
+        console.warn("Rapport trop lent, on passe au suivant.");
+        rotateContent();
+      }, 20000);
+
+    } else {
+      img.src = item.src;
+      img.style.display = "block";
+    }
+
+    current = (current + 1) % urls.length;
+    rotationTimer = setTimeout(rotateContent, 90000); // 90 secondes
+  }
+
+  window.addEventListener("load", rotateContent);
+
+  // Plein écran
+  document.getElementById("fullscreen-btn").addEventListener("click", () => {
+    const el = document.documentElement;
+    if (el.requestFullscreen) el.requestFullscreen();
+    else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+    else if (el.msRequestFullscreen) el.msRequestFullscreen();
+  });
+
+  // 🔁 Rafraîchissement de la page toutes les 10 minutes
+  setTimeout(() => {
+    location.reload();
+  }, 600000); // 600 000 ms = 10 minutes
+</script>
+
+</body>
+</html>
