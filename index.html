@@ -52,7 +52,7 @@
 
 <div id="viewer">
   <img id="imgframe" src="">
-  <!-- L'iframe sera générée -->
+  <!-- Iframe sera injecté ici -->
 </div>
 
 <button id="fullscreen-btn">Plein écran</button>
@@ -79,11 +79,12 @@
 
     const item = urls[current];
 
-    // Nettoyage
+    // Nettoyage de l'iframe précédente
     if (iframe && iframe.parentNode) {
       viewer.removeChild(iframe);
       iframe = null;
     }
+
     img.style.display = "none";
 
     if (item.type === "iframe") {
@@ -98,12 +99,12 @@
       iframe.style.border = "none";
       iframe.style.display = "block";
 
-      // Si l'iframe charge correctement
+      // Si iframe se charge correctement
       iframe.onload = () => clearTimeout(failSafeTimeout);
 
       viewer.appendChild(iframe);
 
-      // Sécurité : si après 20s l'iframe n'a pas chargé, passe au suivant
+      // Sécurité : si pas chargé en 20s → passer au suivant
       failSafeTimeout = setTimeout(() => {
         console.warn("Rapport trop lent, on passe au suivant.");
         rotateContent();
@@ -115,17 +116,23 @@
     }
 
     current = (current + 1) % urls.length;
-    rotationTimer = setTimeout(rotateContent, 90000); // 90 secondes d'affichage
+    rotationTimer = setTimeout(rotateContent, 90000); // 90 secondes
   }
 
   window.addEventListener("load", rotateContent);
 
+  // Plein écran
   document.getElementById("fullscreen-btn").addEventListener("click", () => {
     const el = document.documentElement;
     if (el.requestFullscreen) el.requestFullscreen();
     else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
     else if (el.msRequestFullscreen) el.msRequestFullscreen();
   });
+
+  // 🔁 Rafraîchissement de la page toutes les 10 minutes
+  setTimeout(() => {
+    location.reload();
+  }, 600000); // 600 000 ms = 10 minutes
 </script>
 
 </body>
